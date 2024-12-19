@@ -1,17 +1,28 @@
 <?php
 require 'classes/db.php';
+require 'classes/Utilisateur.php';
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+    // Récupérer les informations du formulaire
     $nom = $_POST['nom'];
     $email = $_POST['email'];
-    $password = password_hash($_POST['password'], PASSWORD_BCRYPT);
+    $password = $_POST['password'];
 
+    // Vérifier si l'email est déjà pris
     $db = DB::getConnection();
-    $stmt = $db->prepare("INSERT INTO utilisateurs (nom, email, password) VALUES (?, ?, ?)");
-    $stmt->execute([$nom, $email, $password]);
+    $stmt = $db->prepare("SELECT * FROM utilisateurs WHERE email = :email");
+    $stmt->bindParam(':email', $email);
+    $stmt->execute();
+    $existing_user = $stmt->fetch(PDO::FETCH_ASSOC);
 
-    header("Location: login.php");
-    exit;
+    if ($existing_user) {
+        echo "L'email est déjà utilisé.";
+    } else {
+        // Enregistrer l'utilisateur
+        Utilisateur::register($nom, $email, $password);
+        header('Location: login.php'); // Rediriger vers la page de connexion
+        exit();
+    }
 }
 ?>
 
@@ -20,40 +31,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Inscription - Bibliothèque en ligne</title>
-    <link rel="stylesheet" href="styles.css"> <!-- Lien vers le fichier CSS -->
+    <title>Inscription</title>
 </head>
 <body>
 
-<header>
-    <h1>Inscription à la Bibliothèque en ligne</h1>
-</header>
+<h1>Inscription</h1>
+<form method="POST" action="register.php">
+    <label for="nom">Nom :</label>
+    <input type="text" name="nom" required><br>
 
-<nav>
-    <a href="index.php">Accueil</a>
-    <a href="register.php">S'inscrire</a>
-    <a href="login.php">Se connecter</a>
-    <a href="dashboard.php">Mon tableau de bord</a>
-</nav>
+    <label for="email">Email :</label>
+    <input type="email" name="email" required><br>
 
-<div class="main-content">
-    <form action="register.php" method="POST">
-        <label for="nom">Nom :</label>
-        <input type="text" id="nom" name="nom" required>
+    <label for="password">Mot de passe :</label>
+    <input type="password" name="password" required><br>
 
-        <label for="email">Email :</label>
-        <input type="email" id="email" name="email" required>
-
-        <label for="password">Mot de passe :</label>
-        <input type="password" id="password" name="password" required>
-
-        <button type="submit">S'inscrire</button>
-    </form>
-</div>
-
-<footer>
-    <p>&copy; 2024 Bibliothèque en ligne</p>
-</footer>
+    <button type="submit">S'inscrire</button>
+</form>
 
 </body>
 </html>

@@ -1,28 +1,20 @@
 <?php
+require 'classes/db.php';
+require 'classes/Favoris.php';
+require 'classes/Livre.php';
 session_start();
-require_once 'classes/db.php';
 
 // Vérifier si l'utilisateur est connecté
 if (!isset($_SESSION['user_id'])) {
-    header('Location: login.php');
+    header('Location: login.php'); // Rediriger si l'utilisateur n'est pas connecté
     exit();
 }
 
-try {
-    $conn = DB::getConnection();
+// Récupérer l'utilisateur connecté
+$utilisateur_id = $_SESSION['user_id'];
 
-    // Récupérer les livres favoris de l'utilisateur
-    $utilisateur_id = $_SESSION['user_id'];
-    $query = "SELECT livres.titre, livres.auteur
-              FROM livres
-              JOIN favoris ON livres.id = favoris.livre_id
-              WHERE favoris.utilisateur_id = ?";
-    $stmt = $conn->prepare($query);
-    $stmt->execute([$utilisateur_id]);
-    $favoris = $stmt->fetchAll(PDO::FETCH_ASSOC);
-} catch (Exception $e) {
-    echo "Erreur de connexion ou d'exécution de la requête : " . $e->getMessage();
-}
+// Récupérer les livres favoris de l'utilisateur
+$favoris = Favoris::getFavoris($utilisateur_id);
 ?>
 
 <!DOCTYPE html>
@@ -33,19 +25,30 @@ try {
     <title>Tableau de bord</title>
 </head>
 <body>
-    <h1>Tableau de bord</h1>
 
-    <h2>Vos livres favoris :</h2>
-    <ul>
-        <?php if (empty($favoris)): ?>
-            <li>Aucun livre favori pour le moment.</li>
-        <?php else: ?>
+<header>
+    <h1>Bienvenue, <?php echo htmlspecialchars($_SESSION['user_name']); ?> !</h1>
+</header>
+
+<nav>
+    <a href="index.php">Accueil</a>
+    <a href="logout.php">Se déconnecter</a>
+</nav>
+
+<h2>Mes livres favoris</h2>
+<div class="favoris-list">
+    <?php if (empty($favoris)): ?>
+        <p>Aucun livre ajouté aux favoris.</p>
+    <?php else: ?>
+        <ul>
             <?php foreach ($favoris as $livre): ?>
-                <li><?php echo htmlspecialchars($livre['titre']); ?> par <?php echo htmlspecialchars($livre['auteur']); ?></li>
+                <li>
+                    <?php echo htmlspecialchars($livre['titre']) . " par " . htmlspecialchars($livre['auteur']); ?>
+                </li>
             <?php endforeach; ?>
-        <?php endif; ?>
-    </ul>
+        </ul>
+    <?php endif; ?>
+</div>
 
-    <p><a href="logout.php">Se déconnecter</a></p>
 </body>
 </html>

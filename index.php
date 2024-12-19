@@ -1,9 +1,22 @@
 <?php
+// Connexion à la base de données
 require 'classes/db.php';
+require 'classes/Livre.php';
+require 'classes/Favoris.php';
 
-$db = DB::getConnection();
-$query = $db->query("SELECT * FROM livres");
-$livres = $query->fetchAll(PDO::FETCH_ASSOC);
+session_start();
+
+// Récupérer les livres disponibles
+$livres = Livre::getAllBooks();
+
+// Ajouter un livre aux favoris si l'utilisateur est connecté
+if (isset($_POST['add_favori']) && isset($_SESSION['user_id'])) {
+    $utilisateur_id = $_SESSION['user_id'];
+    $livre_id = $_POST['livre_id'];
+    Favoris::addFavori($utilisateur_id, $livre_id);
+    header("Location: index.php"); // Recharger la page pour voir le changement
+}
+
 ?>
 
 <!DOCTYPE html>
@@ -12,7 +25,6 @@ $livres = $query->fetchAll(PDO::FETCH_ASSOC);
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Bibliothèque en ligne</title>
-    <link rel="stylesheet" href="styles.css"> <!-- Lien vers votre fichier CSS -->
 </head>
 <body>
 
@@ -24,25 +36,26 @@ $livres = $query->fetchAll(PDO::FETCH_ASSOC);
     <a href="index.php">Accueil</a>
     <a href="register.php">S'inscrire</a>
     <a href="login.php">Se connecter</a>
-    <a href="dashboard.php">Mon tableau de bord</a>
+    <?php if (isset($_SESSION['user_id'])): ?>
+        <a href="dashboard.php">Mon tableau de bord</a>
+    <?php endif; ?>
 </nav>
 
 <div class="main-content">
     <div class="book-list">
-        <!-- Exemple de livre -->
-        <div class="book-item">
-            <h3>1984</h3>
-            <p>Par George Orwell</p>
-            <a href="#" class="btn">Ajouter aux favoris</a>
-        </div>
-
-        <div class="book-item">
-            <h3>Le Petit Prince</h3>
-            <p>Par Antoine de Saint-Exupéry</p>
-            <a href="#" class="btn">Ajouter aux favoris</a>
-        </div>
-
-        <!-- Vous ajouterez d'autres livres ici -->
+        <?php foreach ($livres as $livre): ?>
+            <div class="book-item">
+                <h3><?php echo htmlspecialchars($livre['titre']); ?></h3>
+                <p>Par <?php echo htmlspecialchars($livre['auteur']); ?></p>
+                <?php if (isset($_SESSION['user_id'])): ?>
+                    <!-- Formulaire pour ajouter aux favoris -->
+                    <form action="index.php" method="POST">
+                        <input type="hidden" name="livre_id" value="<?php echo $livre['id']; ?>">
+                        <button type="submit" name="add_favori">Ajouter aux favoris</button>
+                    </form>
+                <?php endif; ?>
+            </div>
+        <?php endforeach; ?>
     </div>
 </div>
 

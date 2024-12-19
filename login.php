@@ -1,23 +1,23 @@
 <?php
 require 'classes/db.php';
+require 'classes/Utilisateur.php';
+
 session_start();
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+    // Récupérer les informations du formulaire
     $email = $_POST['email'];
     $password = $_POST['password'];
 
-    $db = DB::getConnection();
-    $stmt = $db->prepare("SELECT * FROM utilisateurs WHERE email = ?");
-    $stmt->execute([$email]);
-    $user = $stmt->fetch(PDO::FETCH_ASSOC);
-
-    if ($user && password_verify($password, $user['password'])) {
-        $_SESSION['user_id'] = $user['id'];
-        $_SESSION['user_name'] = $user['nom'];
-        header("Location: dashboard.php");
-        exit;
+    // Vérifier les informations de connexion
+    $user = Utilisateur::login($email, $password);
+    if ($user) {
+        $_SESSION['user_id'] = $user->getId();
+        $_SESSION['user_name'] = $user->getNom();
+        header('Location: dashboard.php'); // Rediriger vers le tableau de bord
+        exit();
     } else {
-        $error = "Email ou mot de passe incorrect.";
+        echo "Identifiants incorrects.";
     }
 }
 ?>
@@ -27,41 +27,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Connexion - Bibliothèque en ligne</title>
-    <link rel="stylesheet" href="styles.css"> <!-- Lien vers le fichier CSS -->
+    <title>Connexion</title>
 </head>
 <body>
 
-<header>
-    <h1>Connexion à la Bibliothèque en ligne</h1>
-</header>
+<h1>Se connecter</h1>
+<form method="POST" action="login.php">
+    <label for="email">Email :</label>
+    <input type="email" name="email" required><br>
 
-<nav>
-    <a href="index.php">Accueil</a>
-    <a href="register.php">S'inscrire</a>
-    <a href="login.php">Se connecter</a>
-    <a href="dashboard.php">Mon tableau de bord</a>
-</nav>
+    <label for="password">Mot de passe :</label>
+    <input type="password" name="password" required><br>
 
-<div class="main-content">
-    <form action="login.php" method="POST">
-        <label for="email">Email :</label>
-        <input type="email" id="email" name="email" required>
-
-        <label for="password">Mot de passe :</label>
-        <input type="password" id="password" name="password" required>
-
-        <button type="submit">Se connecter</button>
-
-        <?php if (isset($error_message)): ?>
-            <p class="error"><?php echo $error_message; ?></p>
-        <?php endif; ?>
-    </form>
-</div>
-
-<footer>
-    <p>&copy; 2024 Bibliothèque en ligne</p>
-</footer>
+    <button type="submit">Se connecter</button>
+</form>
 
 </body>
 </html>

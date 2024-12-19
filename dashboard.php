@@ -4,16 +4,14 @@ require 'classes/Favoris.php';
 require 'classes/Livre.php';
 session_start();
 
-// Vérifier si l'utilisateur est connecté
+
 if (!isset($_SESSION['user_id'])) {
-    header('Location: login.php'); // Rediriger si l'utilisateur n'est pas connecté
+    header('Location: login.php'); 
     exit();
 }
 
-// Récupérer l'utilisateur connecté
 $utilisateur_id = $_SESSION['user_id'];
 
-// Récupérer les livres favoris de l'utilisateur
 $favoris = Favoris::getFavoris($utilisateur_id);
 ?>
 

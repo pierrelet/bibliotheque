@@ -3,12 +3,12 @@ require 'classes/db.php';
 require 'classes/Utilisateur.php';
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    // Récupérer les informations du formulaire
+    
     $nom = $_POST['nom'];
     $email = $_POST['email'];
     $password = $_POST['password'];
 
-    // Vérifier si l'email est déjà pris
+    
     $db = DB::getConnection();
     $stmt = $db->prepare("SELECT * FROM utilisateurs WHERE email = :email");
     $stmt->bindParam(':email', $email);
@@ -18,9 +18,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     if ($existing_user) {
         echo "L'email est déjà utilisé.";
     } else {
-        // Enregistrer l'utilisateur
+       
         Utilisateur::register($nom, $email, $password);
-        header('Location: login.php'); // Rediriger vers la page de connexion
+        header('Location: login.php'); 
         exit();
     }
 }

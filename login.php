@@ -5,16 +5,15 @@ require 'classes/Utilisateur.php';
 session_start();
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    // Récupérer les informations du formulaire
+   
     $email = $_POST['email'];
     $password = $_POST['password'];
 
-    // Vérifier les informations de connexion
     $user = Utilisateur::login($email, $password);
     if ($user) {
         $_SESSION['user_id'] = $user->getId();
         $_SESSION['user_name'] = $user->getNom();
-        header('Location: dashboard.php'); // Rediriger vers le tableau de bord
+        header('Location: dashboard.php'); 
         exit();
     } else {
         echo "Identifiants incorrects.";

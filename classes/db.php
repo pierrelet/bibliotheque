@@ -1,9 +1,9 @@
 <?php
 class DB {
-    private static $host = 'localhost';        // Nom de l'hôte
-    private static $dbname = 'bibliotheque';   // Nom de la base de données
-    private static $username = 'postgres';     // Nom d'utilisateur
-    private static $password = '2005';         // Mot de passe de l'utilisateur
+    private static $host = 'localhost';        
+    private static $dbname = 'bibliotheque';   
+    private static $username = 'postgres';     
+    private static $password = '2005';         
     private static $db;
 
     public static function getConnection() {
